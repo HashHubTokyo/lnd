@@ -1067,13 +1067,6 @@ func parseRPCParams(cConfig *chainConfig, nodeConfig interface{}, net chainCode,
 			confFile = "ltcd"
 		}
 
-		// If only ONE of RPCUser or RPCPass is set, we assume the
-		// user did that unintentionally.
-		if conf.RPCUser != "" || conf.RPCPass != "" {
-			return fmt.Errorf("please set both or neither of "+
-				"%[1]v.rpcuser, %[1]v.rpcpass", daemonName)
-		}
-
 	case *bitcoindConfig:
 		// If all of RPCUser, RPCPass, ZMQBlockHost, and ZMQTxHost are
 		// set, we assume those parameters are good to use.
@@ -1092,17 +1085,6 @@ func parseRPCParams(cConfig *chainConfig, nodeConfig interface{}, net chainCode,
 			daemonName = "litecoind"
 			confDir = conf.Dir
 			confFile = "litecoin"
-		}
-
-		// If only one or two of the parameters are set, we assume the
-		// user did that unintentionally.
-		if conf.RPCUser != "" || conf.RPCPass != "" ||
-			conf.ZMQPubRawBlock != "" || conf.ZMQPubRawTx != "" {
-
-			return fmt.Errorf("please set all or none of "+
-				"%[1]v.rpcuser, %[1]v.rpcpass, "+
-				"%[1]v.zmqpubrawblock, %[1]v.zmqpubrawtx",
-				daemonName)
 		}
 	}
 
@@ -1127,7 +1109,12 @@ func parseRPCParams(cConfig *chainConfig, nodeConfig interface{}, net chainCode,
 				" %v, cannot start w/o RPC connection",
 				err)
 		}
-		nConf.RPCUser, nConf.RPCPass = rpcUser, rpcPass
+		if nConf.RPCUser == "" {
+			nConf.RPCUser = rpcUser
+		}
+		if nConf.RPCPass == "" {
+			nConf.RPCPass = rpcPass
+		}
 	case "bitcoind", "litecoind":
 		nConf := nodeConfig.(*bitcoindConfig)
 		rpcUser, rpcPass, zmqBlockHost, zmqTxHost, err :=
@@ -1137,8 +1124,18 @@ func parseRPCParams(cConfig *chainConfig, nodeConfig interface{}, net chainCode,
 				" %v, cannot start w/o RPC connection",
 				err)
 		}
-		nConf.RPCUser, nConf.RPCPass = rpcUser, rpcPass
-		nConf.ZMQPubRawBlock, nConf.ZMQPubRawTx = zmqBlockHost, zmqTxHost
+		if nConf.RPCUser == "" {
+			nConf.RPCUser = rpcUser
+		}
+		if nConf.RPCPass == "" {
+			nConf.RPCPass = rpcPass
+		}
+		if nConf.ZMQPubRawBlock == "" {
+			nConf.ZMQPubRawBlock = zmqBlockHost
+		}
+		if nConf.ZMQPubRawTx == "" {
+			nConf.ZMQPubRawTx = zmqTxHost
+		}
 	}
 
 	fmt.Printf("Automatically obtained %v's RPC credentials\n", daemonName)
