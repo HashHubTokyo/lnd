@@ -2,11 +2,11 @@
 set -e
 
 if [[ "$1" == "lnd" || "$1" == "lncli" ]]; then
-	mkdir -p "$LND_DATA"
+    mkdir -p "$LND_DATA"
 
-	cat <<-EOF > "$LND_DATA/lnd.conf"
-	${LND_EXTRA_ARGS}
-	EOF
+    cat <<-EOF > "$LND_DATA/lnd.conf"
+${LND_EXTRA_ARGS}
+EOF
 
     if [[ $LND_CHAIN && $LND_ENVIRONMENT ]]; then
         echo "LND_CHAIN=$LND_CHAIN"
@@ -37,10 +37,7 @@ if [[ "$1" == "lnd" || "$1" == "lncli" ]]; then
         shopt -u nocasematch
 
         if [[ $ENV && $NETWORK ]]; then
-            echo "
-            $NETWORK.active=1
-            $NETWORK.$ENV=1
-            " >> "$LND_DATA/lnd.conf"
+            sed -i -e "s/\\\$NETWORK/$NETWORK/g" -e "s/\\\$ENV/$ENV/g" "$LND_DATA/lnd.conf"
             echo "Added $NETWORK.active and $NETWORK.$ENV to config file $LND_DATA/lnd.conf"
         else
             echo "LND_CHAIN or LND_ENVIRONMENT is not set correctly"
@@ -54,11 +51,11 @@ if [[ "$1" == "lnd" || "$1" == "lncli" ]]; then
         fi
     fi
 
-	ln -sfn "$LND_DATA" /root/.lnd
+    ln -sfn "$LND_DATA" /root/.lnd
     ln -sfn "$LND_BITCOIND" /root/.bitcoin
     ln -sfn "$LND_LITECOIND" /root/.litecoin
     ln -sfn "$LND_BTCD" /root/.btcd
-	exec "$@"
+    exec "$@"
 else
-	exec "$@"
+    exec "$@"
 fi
